@@ -1,0 +1,8 @@
+#!/bin/sh
+
+python -m SimpleHTTPServer 8080 2>&1 \
+	| sed -u -n 's/.*GET \/\([0-9a-f]*\) HTTP.*/\1/p' \
+	| while read c
+	do
+		./ctrl "$c"
+	done

@@ -1,0 +1,84 @@
+#!/usr/bin/perl
+
+sub path {
+	my($color, $num) = @_;
+	return "/sys/class/leds/thingm3:$color:led$num/brightness";
+}
+
+sub led {
+	my($color, $num, $value) = @_;
+	my $path = path($color, $num);
+
+	if(@_ == 3){
+		# write
+		open(my $fh, '>', $path) or die "open $path: $!\n";
+		print $fh "$value\n";
+		close($fh);
+	}else{
+		# read
+		open(my $fh, '<', $path) or die "open $path: $!\n";
+		my $value = join('', map { chomp; $_ } <$fh>);
+		close($fh);
+		return $value;
+	}
+}
+
+sub red { return led('red', @_) }
+sub green { return led('green', @_) }
+sub blue { return led('blue', @_) }
+
+sub rgb {
+	my($num) = @_;
+
+	if(@_ == 1){
+		my($r, $g, $b) = (red($num), green($num), blue($num));
+		return sprintf "%02x%02x%02x", $r, $g, $b;
+	}else{
+		my($discard, $r, $g, $b) = @_;
+		red($num, $r);
+		green($num, $g);
+		blue($num, $b);
+	}
+}
+
+sub usage {
+	print STDERR "Usage: $0 [-1] [-2] RRGGBB\n";
+	exit 2;
+}
+
+my @color;
+my %nums;
+for(@ARGV){
+	if($_ eq '-1'){
+		$nums{0} = 0;
+	}elsif($_ eq '-2'){
+		$nums{1} = 1;
+	}elsif(!@color
+		&& /^([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/
+	){
+		@color = (
+			hex($1),
+			hex($2),
+			hex($3)
+		);
+	}else{
+		usage();
+	}
+}
+my @nums = keys %nums;
+if(!@nums){
+	push @nums, 0, 1;
+}
+
+if(@color){
+	my($r, $g, $b) = @color;
+	for my $num (@nums){
+		#print "rgb($num, $r, $g, $b)\n";
+		rgb($num, $r, $g, $b);
+	}
+}else{
+	for my $num (@nums){
+		my $col = rgb($num);
+		print "$num #$col\n";
+	}
+}

@@ -1,0 +1,33 @@
+<html>
+	<head>
+		<script>
+const init_i = setInterval(init, 500);
+
+function init() {
+	const picker = document.querySelector("input.picker");
+
+	picker.addEventListener("input", update, false);
+
+	clearInterval(init_i);
+}
+
+function update(event) {
+	const { value } = event.target;
+	const color = value.replace("#", "");
+
+	console.log(`(${typeof color})${color}`);
+
+	fetch(`/${color}`, {
+		cache: 'no-cache',
+	})
+		.catch(e => {
+			console.log(`couldn't set to ${color}:`, e);
+		});
+}
+		</script>
+	</head>
+	<body>
+		<input class="picker" type="color">
+		</input>
+	</body>
+</html>
