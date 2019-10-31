@@ -1,0 +1,12 @@
+#!/bin/sh
+
+seq 0 15 \
+	| tac \
+	| ((echo obase=16; cat) | bc) \
+	| sed 's/./&&&&&&/' \
+	| tr '[A-Z]' '[a-z]' \
+	| while read c
+	do
+		./ctrl $c
+		sleep 0.1
+	done
